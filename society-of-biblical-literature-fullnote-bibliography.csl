@@ -727,16 +727,7 @@
   <citation et-al-min="4" et-al-use-first="1" disambiguate-add-names="true">
     <layout suffix="." delimiter="; ">
       <choose>
-        <if position="ibid-with-locator">
-          <group delimiter=", ">
-            <text term="ibid"/>
-            <text macro="point-locators-subsequent"/>
-          </group>
-        </if>
-        <else-if position="ibid">
-          <text term="ibid"/>
-        </else-if>
-        <else-if position="subsequent">
+        <if position="subsequent">
           <group delimiter=", ">
             <!-- Check if unsigned dictionary/encyclopedia and print container-title // else print contributors -->
             <choose>
@@ -776,7 +767,7 @@
             <text macro="disambiguate-chapter"/>
             <text macro="point-locators-subsequent"/>
           </group>
-        </else-if>
+        </if>
         <else>
           <group delimiter=", ">
             <!-- Check if unsigned dictionary/encyclopedia and print container-title // else print contributors -->
