@@ -21,10 +21,13 @@
     <contributor>
       <name>Sebastian Karcher</name>
     </contributor>
+    <contributor>
+      <name>Tyler Mykkanen</name>
+    </contributor>
     <category citation-format="note"/>
     <category field="theology"/>
     <summary>Society of Biblical Literature format with full notes and bibliography</summary>
-    <updated>2016-11-30T13:46:46+00:00</updated>
+    <updated>2017-12-01T13:46:46+00:00</updated>
     <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
   </info>
   <locale xml:lang="en-US">
@@ -43,7 +46,8 @@
   </macro>
   <macro name="secondary-contributors-note">
     <choose>
-      <if type="bill book chapter graphic legal_case legislation motion_picture paper-conference report song" match="none">
+      <!-- Added dictionary and encyclopedia to get editors to show in proper place-->
+      <if type="bill book chapter graphic legal_case legislation motion_picture paper-conference report song entry-dictionary entry-encyclopedia" match="none">
         <text macro="editor-translator"/>
       </if>
     </choose>
@@ -60,7 +64,8 @@
   </macro>
   <macro name="secondary-contributors">
     <choose>
-      <if type="chapter paper-conference" match="none">
+      <!-- Added dictionary and encyclopedia to get editors to show in proper place-->
+      <if type="chapter paper-conference entry-dictionary entry-encyclopedia" match="none">
         <names variable="editor translator container-author" delimiter=". ">
           <label form="verb" prefix=" " text-case="capitalize-first" suffix=" "/>
           <name and="text" delimiter=", "/>
@@ -70,7 +75,8 @@
   </macro>
   <macro name="container-contributors">
     <choose>
-      <if type="chapter paper-conference" match="any">
+      <!-- Added dictionary and encyclopedia to get editors to show in proper place-->
+      <if type="chapter paper-conference entry-dictionary entry-encyclopedia" match="any">
         <group delimiter=", ">
           <names variable="editor translator container-author" delimiter=", ">
             <label form="verb" prefix=" " text-case="capitalize-first" suffix=" "/>
@@ -307,35 +313,76 @@
       <else-if type="article-journal">
         <text variable="container-title" font-style="italic" form="short" text-case="title"/>
       </else-if>
+      <!-- Hack for processing note field of dictionary and encyclopedia to handle dictionary abbreviations -->
+      <else-if match="all" variable="note" type="entry-dictionary entry-encyclopedia">
+          <text variable="note" font-style="italic" text-case="uppercase"/>
+      </else-if>
       <else>
         <text variable="container-title" font-style="italic" text-case="title"/>
       </else>
     </choose>
   </macro>
-  <macro name="collection-title">
-    <text variable="collection-title" form="short"/>
-    <text variable="collection-number" prefix=" "/>
-  </macro>
-  <macro name="collection-title-note">
-    <text variable="collection-title" form="short"/>
-    <text variable="collection-number" prefix=" "/>
-  </macro>
   <macro name="container-title">
     <choose>
-      <if type="chapter paper-conference" match="any">
+      <!-- Added dictionary and encyclopedia to get page and volume information-->
+      <if type="chapter paper-conference entry-dictionary entry-encyclopedia" match="any">
         <group delimiter=" " suffix=" ">
           <label variable="page" form="long" text-case="capitalize-first"/>
           <text variable="page"/>
           <text term="in"/>
+          <choose>
+            <!-- Added dictionary and encyclopedia to get volume information-->
+            <if type="entry-dictionary entry-encyclopedia" match="any">
+              <choose>
+                <if match="any" variable="volume">
+                  <label suffix=" " variable="volume" form="short"/>
+                  <number variable="volume"/>
+                  <text value="of" suffix=" "/>
+                </if>
+              </choose>
+            </if>
+          </choose>
         </group>
       </if>
     </choose>
     <choose>
-      <if type="article-journal">
-        <text variable="container-title" font-style="italic" text-case="title" form="short"/>
+      <!-- Hack for processing note field of dictionary and encyclopedia to handle dictionary abbreviations -->
+      <if match="all" variable="note" type="entry-dictionary entry-encyclopedia">
+        <text variable="note" font-style="italic" text-case="uppercase"/>
       </if>
       <else>
-        <text variable="container-title" font-style="italic" text-case="title"/>
+        <choose>
+          <if type="article-journal">
+            <text variable="container-title" font-style="italic" text-case="title" form="short"/>
+          </if>
+          <else>
+            <text variable="container-title" font-style="italic" text-case="title"/>
+          </else>
+        </choose>
+      </else>
+    </choose>
+  </macro>
+  <macro name="collection-title">
+    <choose>
+      <!-- Hack for processing note field of books to handle commentary series abbreviations -->
+      <if match="all" variable="note" type="book">
+        <text variable="note" font-style="italic" text-case="uppercase"/>
+      </if>
+      <else>
+        <text variable="collection-title" form="short" text-case="title"/>
+        <text variable="collection-number" prefix=" "/>
+      </else>
+    </choose>
+  </macro>
+  <macro name="collection-title-note">
+    <choose>
+      <!-- Hack for processing note field of books to handle commentary series abbreviations -->
+      <if match="all" variable="note" type="book">
+        <text variable="note" font-style="italic" text-case="uppercase"/>
+      </if>
+      <else>
+        <text variable="collection-title" form="short" text-case="title"/>
+        <text variable="collection-number" prefix=" "/>
       </else>
     </choose>
   </macro>
@@ -411,6 +458,13 @@
           <text macro="edition"/>
         </group>
       </else-if>
+      <!-- Added dictionary and encyclopedia to properly display volume information-->
+      <else-if type="entry-dictionary entry-encyclopedia">
+        <group prefix=". ">
+          <number variable="number-of-volumes" form="numeric"/>
+          <text term="volume" form="short" prefix=" " plural="true"/>
+        </group>
+      </else-if>
     </choose>
   </macro>
   <macro name="locators-newspaper">
@@ -472,8 +526,8 @@
           </else-if>
           <else>
             <date variable="issued">
+              <date-part name="day" suffix=" "/>
               <date-part name="month" suffix=" "/>
-              <date-part name="day" suffix=", "/>
               <date-part name="year"/>
             </date>
           </else>
@@ -506,9 +560,11 @@
           </choose>
           <text variable="locator"/>
         </if>
-        <else-if variable="volume locator" position="subsequent" match="all">
+        <!-- Removed position="subsequent" to get dictionary entries to work correctly -->
+        <else-if variable="volume locator" match="all">
           <choose>
-            <if type="bill book graphic legal_case legislation motion_picture report song chapter paper-conference" match="any">
+            <!-- Added dictionary and encyclopedia to type -->
+            <if type="bill book graphic legal_case legislation motion_picture report song chapter paper-conference entry-dictionary entry-encyclopedia" match="any">
               <group delimiter=":">
                 <number variable="volume" form="numeric"/>
                 <text variable="locator"/>
@@ -546,6 +602,13 @@
       <else-if type="chapter paper-conference" match="any">
         <text variable="page" prefix=", "/>
       </else-if>
+      <!-- Added dictionary and encyclopedia to properly display volume and page information-->
+      <else-if type="entry-dictionary entry-encyclopedia" match="any">
+        <group delimiter=":" prefix=", ">
+          <number variable="volume"/>
+          <text variable="page"/>
+        </group>
+      </else-if>
     </choose>
   </macro>
   <macro name="locators-journal">
@@ -571,31 +634,36 @@
   </macro>
   <macro name="issue-note">
     <choose>
-      <if type="article-journal">
-        <text variable="volume" prefix=" "/>
-        <text variable="issue" prefix="."/>
-        <text macro="issued" prefix=" (" suffix=")"/>
-      </if>
-      <else-if variable="publisher-place publisher" match="any">
-        <group prefix=" (" suffix=")">
-          <group delimiter=", ">
-            <group delimiter=" ">
-              <choose>
-                <if variable="title" match="none"/>
-                <else-if type="thesis speech" match="any">
-                  <text variable="genre"/>
-                </else-if>
-              </choose>
-              <text macro="event"/>
+      <!--Exclude Publisher info from in-text citations of dictionaries and encyclopedias-->
+      <if match="none" type="entry-dictionary entry-encyclopedia">
+        <choose>
+          <if type="article-journal">
+            <text variable="volume" prefix=" "/>
+            <text variable="issue" prefix="."/>
+            <text macro="issued" prefix=" (" suffix=")"/>
+          </if>
+          <else-if variable="publisher-place publisher" match="any">
+            <group prefix=" (" suffix=")">
+              <group delimiter=", ">
+                <group delimiter=" ">
+                  <choose>
+                    <if variable="title" match="none"/>
+                    <else-if type="thesis speech" match="any">
+                      <text variable="genre"/>
+                    </else-if>
+                  </choose>
+                  <text macro="event"/>
+                </group>
+                <text macro="publisher"/>
+                <text macro="issued"/>
+              </group>
             </group>
-            <text macro="publisher"/>
-            <text macro="issued"/>
-          </group>
-        </group>
-      </else-if>
-      <else>
-        <text macro="issued" prefix=", "/>
-      </else>
+          </else-if>
+          <else>
+            <text macro="issued" prefix=", "/>
+          </else>
+        </choose>
+      </if>
     </choose>
   </macro>
   <macro name="issue">
@@ -670,19 +738,98 @@
         </else-if>
         <else-if position="subsequent">
           <group delimiter=", ">
-            <text macro="contributors-short"/>
-            <text macro="title-short"/>
+            <!-- Check if unsigned dictionary/encyclopedia and print container-title // else print contributors -->
+            <choose>
+              <if type="entry-dictionary entry-encyclopedia" match="any">
+                <choose>
+                  <if match="none" variable="author">
+                    <text macro="container-title-note"/>
+                  </if>
+                  <else>
+                    <text macro="contributors-short"/>
+                  </else>
+                </choose>
+              </if>
+              <else>
+                <text macro="contributors-short"/>
+              </else>
+            </choose>
+            <!-- Check if unsigned dictionary/encyclopedia and print title-note // else print title variable w/s.v. -->
+            <choose>
+              <if type="entry-dictionary entry-encyclopedia" match="any">
+                <choose>
+                  <if match="none" variable="author">
+                    <group delimiter=" ">
+                      <text term="sub verbo" form="short"/>
+                      <text variable="title" form="short" quotes="true" text-case="title"/>
+                    </group>
+                  </if>
+                  <else>
+                    <text macro="title-short"/>
+                  </else>
+                </choose>
+              </if>
+              <else>
+                <text macro="title-short"/>
+              </else>
+            </choose>
             <text macro="disambiguate-chapter"/>
             <text macro="point-locators-subsequent"/>
           </group>
         </else-if>
         <else>
           <group delimiter=", ">
-            <text macro="contributors-note"/>
-            <text macro="title-note"/>
+            <!-- Check if unsigned dictionary/encyclopedia and print container-title // else print contributors -->
+            <choose>
+              <if type="entry-dictionary entry-encyclopedia" match="any">
+                <choose>
+                  <if match="none" variable="author">
+                    <text macro="container-title-note"/>
+                  </if>
+                  <else>
+                    <text macro="contributors-note"/>
+                  </else>
+                </choose>
+              </if>
+              <else>
+                <text macro="contributors-note"/>
+              </else>
+            </choose>
+            <!-- Check if unsigned dictionary/encyclopedia and print title-note // else print title variable w/s.v. -->
+            <choose>
+              <if type="entry-dictionary entry-encyclopedia" match="any">
+                <choose>
+                  <if match="none" variable="author">
+                    <group delimiter=" ">
+                      <text term="sub verbo" form="short"/>
+                      <text variable="title" text-case="title" quotes="true"/>
+                    </group>
+                  </if>
+                  <else>
+                    <text macro="title-note"/>
+                  </else>
+                </choose>
+              </if>
+              <else>
+                <text macro="title-note"/>
+              </else>
+            </choose>
             <text macro="description-note"/>
             <text macro="secondary-contributors-note"/>
-            <text macro="container-title-note"/>
+            <choose>
+              <if type="entry-dictionary entry-encyclopedia" match="any">
+                <choose>
+                  <if match="none" variable="author">
+                  </if>
+                  <else>
+                    <text macro="container-title-note"/>
+                  </else>
+                </choose>
+              </if>
+              <else>
+                <text macro="container-title-note"/>
+              </else>
+            </choose>
             <text macro="container-contributors-note"/>
             <text macro="locators-note"/>
             <text macro="collection-title-note"/>
